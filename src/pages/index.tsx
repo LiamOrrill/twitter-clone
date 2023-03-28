@@ -6,6 +6,7 @@ import { api, type RouterOutputs } from "@/utils/api";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import Image from "next/image";
+import { LoadingPage } from "@/components/loading";
 
 dayjs.extend(relativeTime);
 
@@ -40,8 +41,6 @@ const PostView = (props: PostWithUser) => {
 const CreatePostWizard = () => {
   const { data: sessionData } = useSession();
 
-  console.log(sessionData?.user);
-
   if (!sessionData) return null;
 
   return (
@@ -58,14 +57,29 @@ const CreatePostWizard = () => {
   );
 };
 
-const Home: NextPage = () => {
+const Feed = () => {
   const { data, isLoading } = api.post.getAll.useQuery();
 
-  console.log(data);
+  if (isLoading) return <LoadingPage />;
 
-  if (isLoading) return <div>Loading...</div>;
+  if (!data) return <div>Something went wrong....</div>;
 
-  if (!data) return <div>no data</div>;
+  return (
+    <div className="flex flex-col">
+      {data?.map((fullPost) => (
+        <PostView {...fullPost} key={fullPost.post.id} />
+      ))}
+    </div>
+  );
+};
+
+const Home: NextPage = () => {
+  const { status } = useSession();
+  //start fetching posts asap
+  api.post.getAll.useQuery();
+
+  // return empty div if BOTH arent loadedm subce user tends to load faster
+  if (status !== "authenticated") return <div />;
 
   return (
     <>
@@ -79,11 +93,7 @@ const Home: NextPage = () => {
           <div className="border-b border-slate-400 p-4">
             <AuthShowcase />
           </div>
-          <div className="flex flex-col">
-            {data?.map((fullPost) => (
-              <PostView {...fullPost} key={fullPost.post.id} />
-            ))}
-          </div>
+          <Feed />
         </div>
       </main>
     </>
@@ -94,13 +104,6 @@ export default Home;
 
 const AuthShowcase: React.FC = () => {
   const { data: sessionData } = useSession();
-
-  // const { data: secretMessage } = api.example.getSecretMessage.useQuery(
-  //   undefined, // no input
-  //   { enabled: sessionData?.user !== undefined }
-  // );
-
-  console.log(sessionData);
 
   return (
     <div className="">
@@ -116,13 +119,6 @@ const AuthShowcase: React.FC = () => {
           Sign In
         </button>
       )}
-
-      {/* <button
-        className="flex justify-center  text-white no-underline "
-        onClick={sessionData ? () => void signOut() : () => void signIn()}
-      >
-        {sessionData ? "Sign out" : "Sign in"}
-      </button> */}
     </div>
   );
 };
