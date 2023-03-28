@@ -136,12 +136,11 @@ const Feed = () => {
 };
 
 const Home: NextPage = () => {
-  const { status } = useSession();
+  // const { status } = useSession();
   //start fetching posts asap
   api.post.getAll.useQuery();
 
   // return empty div if BOTH arent loadedm subce user tends to load faster
-  if (status !== "authenticated") return <div />;
 
   return (
     <PageLayout>
