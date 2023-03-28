@@ -7,6 +7,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import Image from "next/image";
 import { LoadingPage } from "@/components/loading";
+import { useState } from "react";
 
 dayjs.extend(relativeTime);
 
@@ -32,7 +33,7 @@ const PostView = (props: PostWithUser) => {
             post.createdAt
           ).fromNow()}`}</span>
         </div>
-        <span> {post.content}</span>
+        <span className="text-xl"> {post.content}</span>
       </div>
     </div>
   );
@@ -40,6 +41,17 @@ const PostView = (props: PostWithUser) => {
 
 const CreatePostWizard = () => {
   const { data: sessionData } = useSession();
+
+  const [input, setInput] = useState<string>("");
+
+  const ctx = api.useContext();
+
+  const { mutate, isLoading: isPosting } = api.post.create.useMutation({
+    onSuccess: () => {
+      setInput("");
+      void ctx.post.getAll.invalidate();
+    },
+  });
 
   if (!sessionData) return null;
 
@@ -52,7 +64,24 @@ const CreatePostWizard = () => {
         width={56}
         height={56}
       />
-      <input placeholder="Type some emojis!" className="grow bg-transparent" />
+      <input
+        placeholder="Type some emojis!"
+        className="grow bg-transparent"
+        type={"text"}
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        disabled={isPosting}
+      />
+
+      <button
+        onClick={() =>
+          mutate({
+            content: input,
+          })
+        }
+      >
+        Post
+      </button>
     </div>
   );
 };
