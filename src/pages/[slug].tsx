@@ -1,6 +1,11 @@
+import { PageLayout } from "@/components/layout";
+import { LoadingPage } from "@/components/loading";
+import { PostView } from "@/components/postview";
 import { api } from "@/utils/api";
-import { type NextPage } from "next";
+import { generateSSGHelper } from "@/utils/ssgHelper";
+import type { GetStaticProps, NextPage } from "next";
 import Head from "next/head";
+import Image from "next/image";
 
 const ProfileFeed = (props: { userId: string }) => {
   const { data, isLoading } = api.post.getPostsByUserId.useQuery({
@@ -34,7 +39,7 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
         <title>{username}</title>
       </Head>
       <PageLayout>
-        <div className="relative h-36  bg-slate-600">
+        <div className="relative h-36 bg-slate-600">
           <Image
             src={data.image || ""}
             alt={data.name || ""}
@@ -46,6 +51,7 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
         <div className="h-[64px]" />
         <div className="p-4 text-2xl">{`@${data.name || ""}`}</div>
         <div className="w-full border-b border-slate-400" />
+
         <ProfileFeed userId={data.id} />
       </PageLayout>
     </>
@@ -54,26 +60,8 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
 
 export default Profile;
 
-import { createProxySSGHelpers } from "@trpc/react-query/ssg";
-
-import { prisma } from "@/server/db";
-import superjson from "superjson";
-import { type GetStaticProps } from "next";
-import { appRouter } from "@/server/api/root";
-import { PageLayout } from "@/components/layout";
-import Image from "next/image";
-import { LoadingPage } from "@/components/loading";
-import { PostView } from "@/components/postview";
-
 export const getStaticProps: GetStaticProps = async (context) => {
-  const ssg = createProxySSGHelpers({
-    router: appRouter,
-    ctx: {
-      prisma,
-      session: null,
-    },
-    transformer: superjson,
-  });
+  const ssg = generateSSGHelper();
 
   const slug = context.params?.slug;
 

@@ -2,17 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-
 body {
-    @apply bg-black text-slate-100;
+  @apply bg-black text-slate-100;
 
-    /* overscroll-behavior: none; */
-
-
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
-}
-
-body ::-webkit-scrollbar {
-    display: none;
+  overscroll-behavior: none;
 }

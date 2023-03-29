@@ -151,4 +151,54 @@ export const postRouter = createTRPCRouter({
         };
       });
     }),
+
+  getPostById: publicProcedure
+    .input(z.object({ postId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const post = await ctx.prisma.post.findUnique({
+        where: {
+          id: input.postId,
+        },
+        select: {
+          id: true,
+          createdAt: true,
+          content: true,
+          authorId: true,
+        },
+      });
+
+      if (!post) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Post not found",
+        });
+      }
+
+      const author = await ctx.prisma.user.findUnique({
+        where: {
+          id: post.authorId,
+        },
+        select: {
+          id: true,
+          image: true,
+          name: true,
+        },
+      });
+
+      if (!author || !author.name || !author.image) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: `Could not find author for post`,
+        });
+      }
+
+      return {
+        post,
+        author: {
+          id: author.id,
+          name: author.name,
+          image: author.image,
+        },
+      };
+    }),
 });
