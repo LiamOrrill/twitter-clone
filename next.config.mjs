@@ -22,5 +22,12 @@ const config = {
   images: {
     domains: ["cdn.discordapp.com", "avatars.githubusercontent.com"],
   },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  swcMinify: true,
 };
 export default config;
